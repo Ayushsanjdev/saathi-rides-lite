@@ -1,0 +1,37 @@
+{
+  "name": "saathi-rides",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "tsx scripts/local.ts",
+    "dev:external": "concurrently -k \"npm run dev -w @saathi/api\" \"npm run dev -w @saathi/web\"",
+    "build": "npm run build -w @saathi/api && npm run build -w @saathi/web",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "seed": "tsx scripts/seed.ts",
+    "start": "concurrently -k \"npm run start -w @saathi/api\" \"npm run start -w @saathi/web\"",
+    "provision:operator": "tsx apps/api/src/provision-operator.ts"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "@types/node": "26.6.4",
+    "@types/supertest": "7.2.1",
+    "concurrently": "10.0.5",
+    "dotenv": "18.0.5",
+    "mongodb": "^7.5.0",
+    "mongodb-memory-server": "11.3.0",
+    "supertest": "7.3.1",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2",
+    "vitest": "5.0.3"
+  },
+  "overrides": {
+    "esbuild": "0.28.2"
+  }
+}

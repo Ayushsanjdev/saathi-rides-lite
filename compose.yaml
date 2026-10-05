@@ -1,0 +1,43 @@
+# Local container demonstration. For production, use an authenticated managed replica set.
+services:
+  mongo:
+    image: mongo:8.0
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    volumes: ["mongo-data:/data/db"]
+    ports: ["127.0.0.1:27017:27017"]
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "quit(db.adminCommand({ping:1}).ok ? 0 : 1)"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  mongo-init:
+    image: mongo:8.0
+    depends_on:
+      mongo: {condition: service_healthy}
+    entrypoint: ["mongosh", "--host", "mongo:27017", "--quiet", "--eval", "try { rs.status() } catch (e) { rs.initiate({_id:'rs0',members:[{_id:0,host:'mongo:27017'}]}) }"]
+  api:
+    build: {context: ., target: api}
+    depends_on:
+      mongo-init: {condition: service_completed_successfully}
+    environment:
+      NODE_ENV: development
+      MONGODB_URI: mongodb://mongo:27017/saathi?replicaSet=rs0
+      SESSION_SECRET: ${SESSION_SECRET:?Set SESSION_SECRET in .env}
+      APP_ORIGIN: http://127.0.0.1:3000
+      API_PORT: 4000
+      TRUST_PROXY: 0
+    ports: ["127.0.0.1:4000:4000"]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4000/api/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+  web:
+    build: {context: ., target: web}
+    depends_on:
+      api: {condition: service_healthy}
+    environment:
+      API_INTERNAL_URL: http://api:4000
+    ports: ["127.0.0.1:3000:3000"]
+volumes:
+  mongo-data:

@@ -1,0 +1,25 @@
+import { z } from 'zod';
+export const objectId = z.string().regex(/^[a-f\d]{24}$/i, 'Choose a valid record');
+export const roleSchema=z.enum(['passenger','driver','operator']);
+export type Role=z.infer<typeof roleSchema>;
+export const registerSchema=z.object({name:z.string().trim().min(2).max(80),email:z.email().trim().toLowerCase().max(254),password:z.string().min(10).max(128),phone:z.string().regex(/^[6-9]\d{9}$/).optional()}).strict();
+export const loginSchema=registerSchema.pick({email:true,password:true});
+export const bookingSchema=z.object({departureId:objectId,seats:z.number().int().min(1).max(4),idempotencyKey:z.string().min(8).max(100),contactPhone:z.string().regex(/^[6-9]\d{9}$/,'Enter a 10-digit Indian mobile number')}).strict();
+export const stopSchema=z.object({name:z.string().trim().min(2).max(80),locality:z.string().trim().min(2).max(80),active:z.boolean().default(true)}).strict();
+export const routeSchema=z.object({fromStopId:objectId,toStopId:objectId,farePaise:z.number().int().min(100).max(100000),active:z.boolean().default(true)}).strict().refine(r=>r.fromStopId!==r.toStopId,{message:'Pickup and destination must differ',path:['toStopId']});
+export const departureSchema=z.object({routeId:objectId,departureAt:z.iso.datetime({offset:true}),durationMinutes:z.number().int().min(10).max(180),capacity:z.number().int().min(1).max(4),driverId:objectId.optional()}).strict();
+export const assignSchema=z.object({driverId:objectId}).strict();
+export const driverSchema=z.object({name:z.string().trim().min(2).max(80),email:z.email().trim().toLowerCase(),password:z.string().min(10).max(128),phone:z.string().regex(/^[6-9]\d{9}$/,'Enter a 10-digit Indian mobile number'),vehicle:z.string().trim().min(5).max(30),capacity:z.number().int().min(1).max(4),verified:z.boolean()}).strict();
+export const driverUpdateSchema=z.object({active:z.boolean(),verified:z.boolean()}).strict();
+export type UserDTO={id:string;name:string;email:string;role:Role;phone?:string};
+export type StopDTO={id:string;name:string;locality:string;active:boolean};
+export type RouteDTO={id:string;fromStopId:string;toStopId:string;farePaise:number;active:boolean;pickup:string;destination:string};
+export type DepartureStatus='scheduled'|'in-progress'|'completed'|'cancelled';
+export type Assignment='unassigned'|'pending'|'accepted'|'declined';
+export type DepartureDTO={id:string;routeId:string;pickup:string;destination:string;farePaise:number;departureAt:string;endAt:string;capacity:number;availableSeats:number;driverId?:string;driverName?:string;vehicle?:string;driverPhone?:string;status:DepartureStatus;assignment:Assignment;bookedSeats:number};
+export type BookingDTO={id:string;reference:string;departureId:string;passengerId:string;passengerName:string;seats:number;totalPaise:number;status:'confirmed'|'completed'|'passenger-cancelled'|'departure-cancelled'|'no-show';contactPhone:string;cashCollected:boolean;createdAt:string;departure:DepartureDTO};
+export type DriverDTO={id:string;userId:string;name:string;phone:string;vehicle:string;capacity:number;active:boolean;verified:boolean;email:string};
+export type AuditDTO={id:string;actorId:string;action:string;entityId:string;createdAt:string;summary:string};
+export type OverviewDTO={departures:DepartureDTO[];bookings:BookingDTO[];drivers:DriverDTO[];routes:RouteDTO[];stops:StopDTO[];audit:AuditDTO[];stats:{completedTrips:number;confirmedSeats:number;collectedPaise:number;cancelledBookings:number}};
+
+export type DeparturePageDTO={departures:DepartureDTO[];page:number;total:number;hasMore:boolean};
