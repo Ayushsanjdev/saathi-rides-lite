@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import {rateLimit} from 'express-rate-limit';
 import mongoose from 'mongoose';
 import argon2 from 'argon2';
+import {randomUUID} from 'node:crypto';
 import {z} from 'zod';
 import {registerSchema,loginSchema,bookingSchema,objectId,stopSchema,routeSchema,departureSchema,assignSchema,driverSchema,driverUpdateSchema} from '@saathi/contracts';
 import {User,Driver,Stop,Route,Departure,Booking,Audit} from './models';
@@ -13,7 +14,7 @@ import {token,csrf,authenticate,requireRole,actor,regenerate,saveSession} from '
 import {createBooking,cancelBooking} from './booking';
 import {scheduleDeparture,assignDriver,driverAction,cancelDeparture,collectCash,markNoShow} from './operations';
 import {bookingDTO,departureDTO} from './serializers';
-export interface AppConfig {mongoUri:string;sessionSecret:string;appOrigin:string;production?:boolean;trustProxy?:number;supportPhone?:string;}
+export interface AppConfig {mongoUri:string;sessionSecret:string;appOrigin:string;production?:boolean;trustProxy?:number;supportPhone?:string;demoSignIn?:boolean;}
 const id=(req:Request)=>parse(objectId,req.params.id);
 const pagination=(req:Request)=>parse(z.object({page:z.coerce.number().int().min(1).max(10000).default(1),limit:z.coerce.number().int().min(1).max(100).default(30)}),req.query);
 export function createApp(config:AppConfig){
@@ -23,9 +24,17 @@ export function createApp(config:AppConfig){
   app.use('/api',csrf(config.appOrigin));
   app.get('/api/health',(_req,res)=>res.json({status:'ok'}));
   app.get('/api/ready',(_req,res)=>res.status(mongoose.connection.readyState===1?200:503).json({status:mongoose.connection.readyState===1?'ready':'unavailable'}));
-  app.get('/api/config',(_req,res)=>res.json({supportPhone:config.supportPhone||null,demo:!config.production&&process.env.DEMO_MODE==='true'?{password:process.env.DEMO_PASSWORD}:null}));
+  app.get('/api/config',(_req,res)=>res.json({supportPhone:config.supportPhone||null,demoSignIn:config.demoSignIn===true,demo:!config.production&&process.env.DEMO_MODE==='true'?{password:process.env.DEMO_PASSWORD}:null}));
   app.get('/api/auth/csrf',async(req,res)=>{const csrfToken=token(req);await saveSession(req);res.json({csrfToken});});
   const authLimit=rateLimit({windowMs:15*60000,limit:100,standardHeaders:'draft-8',legacyHeaders:false,message:{error:{code:'RATE_LIMITED',message:'Too many attempts. Try again later.'}}});
+  const demoLimit=rateLimit({windowMs:15*60000,limit:20,standardHeaders:'draft-8',legacyHeaders:false,message:{error:{code:'RATE_LIMITED',message:'Too many demo sign-ins. Try again later.'}}});
+  app.post('/api/auth/demo',demoLimit,async(req,res)=>{
+    if(!config.demoSignIn)throw new AppError(404,'NOT_FOUND','Demo sign-in is unavailable.');
+    const passwordHash=await argon2.hash(randomUUID(),{type:argon2.argon2id});
+    const user=await User.create({name:'Demo passenger',email:`demo-${randomUUID()}@saathi.test`,passwordHash,role:'passenger',active:true});
+    await regenerate(req);req.session.userId=String(user._id);const csrfToken=token(req);await saveSession(req);
+    res.json({user:{id:String(user._id),name:user.name,email:user.email,role:user.role},csrfToken});
+  });
   app.post('/api/auth/register',authLimit,async(req,res)=>{
     const input=parse(registerSchema,req.body);const passwordHash=await argon2.hash(input.password,{type:argon2.argon2id});
     const user=await User.create({name:input.name,email:input.email,phone:input.phone,passwordHash,role:'passenger',active:true});

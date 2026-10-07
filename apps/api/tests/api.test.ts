@@ -44,6 +44,27 @@ beforeEach(async()=>{
 });
 
 describe('sessions and permissions',()=>{
+  it('signs demo visitors into separate passenger sessions without granting operator access',async()=>{
+    const demoApp=createApp({mongoUri:repl.getUri('saathi_test'),sessionSecret:'test-secret-at-least-thirty-two-characters',appOrigin:origin,demoSignIn:true} as Parameters<typeof createApp>[0]);
+    try {
+      expect((await request(demoApp).get('/api/config')).body.demoSignIn).toBe(true);
+      expect((await request(demoApp).post('/api/auth/demo')).status).toBe(403);
+      const visitors=[];
+      for(let i=0;i<2;i++){
+        const agent=request.agent(demoApp);const csrf=(await agent.get('/api/auth/csrf')).body.csrfToken;
+        const result=await agent.post('/api/auth/demo').set('Origin',origin).set('X-CSRF-Token',csrf).send({role:'operator'});
+        expect(result.status).toBe(200);expect(result.body.user.role).toBe('passenger');expect(result.body.csrfToken).toBeTruthy();
+        expect((await agent.get('/api/me')).body.user.id).toBe(result.body.user.id);
+        visitors.push(result.body.user.id);
+      }
+      expect(visitors[0]).not.toBe(visitors[1]);
+    } finally {await demoApp.locals.sessionStore.close();}
+  });
+  it('does not offer demo sign-in unless explicitly enabled',async()=>{
+    expect((await request(app).get('/api/config')).body.demoSignIn).toBe(false);
+    const agent=request.agent(app);const csrf=(await agent.get('/api/auth/csrf')).body.csrfToken;
+    expect((await agent.post('/api/auth/demo').set('Origin',origin).set('X-CSRF-Token',csrf)).status).toBe(404);
+  });
   it('requires a session for private profile',async()=>expect((await request(app).get('/api/me')).status).toBe(401));
   it('registers a passenger and rejects privilege injection',async()=>{
     const agent=request.agent(app); const csrf=(await agent.get('/api/auth/csrf')).body.csrfToken;

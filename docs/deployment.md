@@ -42,6 +42,8 @@ The environment must be injected into both commands/processes. `npm run start` l
 
 ## Provision the first operator
 
+For a public preview, optionally set `DEMO_SIGN_IN=true` to show **Try demo** in the sign-in dialog. Each click creates a separate passenger account and signs it in without publishing a password. The endpoint requires CSRF protection and is rate-limited. These accounts use the same routes and booking system as other passengers; enable this only when demo bookings are appropriate. It does not seed routes or grant driver/operator access, and does not require `DEMO_MODE` or `ALLOW_DEMO_SEED`.
+
 Set `OPERATOR_NAME`, `OPERATOR_EMAIL`, `OPERATOR_PASSWORD` (minimum 12 characters) and `MONGODB_URI` through the hosting secret/environment interface. Run:
 
 ```bash
