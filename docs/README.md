@@ -27,7 +27,9 @@ No Docker, Atlas account, SMS account, map token, or payment account is required
 | Third driver | driver3@saathi.test | SaathiDemo2026! |
 | Operator | operator@saathi.test | SaathiDemo2026! |
 
-The sign-in dialog can fill these credentials. It still submits through real authentication; choosing a role does not bypass permissions. The demo defaults are public and for this isolated local database only. Custom `DEMO_PASSWORD` affects newly created seed users; it does not silently overwrite existing passwords.
+The sign-in dialog offers one-click sign-in for all five accounts through real authentication. These public credentials are for isolated demo databases. Custom `DEMO_PASSWORD` affects newly created local seed users; it does not silently overwrite existing passwords.
+
+For the hosted portfolio preview, set `HOSTED_DEMO=true`. The API switches to a separate `saathi_demo` database on the configured MongoDB cluster, seeds these accounts and sample stops/routes/drivers, and replenishes missing upcoming rides over eight days on startup. Production HTTPS and secure cookies remain enabled. The existing application database is preserved. Demo bookings and operator changes affect the shared demo database; no real transport is dispatched. Dropdown and date changes refresh rides automatically, and passenger counts update total fares.
 
 ## Walk through the complete app
 

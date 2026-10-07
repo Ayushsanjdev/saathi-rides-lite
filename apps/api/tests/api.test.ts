@@ -6,6 +6,8 @@ import request from 'supertest';
 import type { Express } from 'express';
 import { createApp } from '../src/app';
 import path from 'node:path';
+import {seedDemo} from '../src/seed';
+import {connectDatabase} from '../src/db';
 
 const origin='http://127.0.0.1:3000';
 const ids={ rider:new mongoose.Types.ObjectId(), other:new mongoose.Types.ObjectId(), driver:new mongoose.Types.ObjectId(), operator:new mongoose.Types.ObjectId(), route:new mongoose.Types.ObjectId(), from:new mongoose.Types.ObjectId(), to:new mongoose.Types.ObjectId(), departure:new mongoose.Types.ObjectId() };
@@ -44,6 +46,29 @@ beforeEach(async()=>{
 });
 
 describe('sessions and permissions',()=>{
+  it('seeds all README demo roles and bookable routes only in the isolated hosted database',async()=>{
+    const oldNodeEnv=process.env.NODE_ENV;process.env.NODE_ENV='production';
+    try {
+      await expect(seedDemo('SaathiDemo2026!',{hostedDemo:true})).rejects.toThrow();
+      await mongoose.disconnect();await connectDatabase(repl.getUri('saathi_demo'));
+      await seedDemo('SaathiDemo2026!',{hostedDemo:true});
+      const demoApp=createApp({mongoUri:repl.getUri('saathi_demo'),sessionSecret:'test-secret-at-least-thirty-two-characters',appOrigin:origin,hostedDemo:true});
+      try {
+        const demoConfig=(await request(demoApp).get('/api/config')).body;
+        expect(demoConfig.demo.password).toBe('SaathiDemo2026!');
+        for(const [email,role] of [['passenger','passenger'],['driver','driver'],['driver2','driver'],['driver3','driver'],['operator','operator']]){
+          const agent=request.agent(demoApp);const csrf=(await agent.get('/api/auth/csrf')).body.csrfToken;
+          const result=await agent.post('/api/auth/login').set('Origin',origin).set('X-CSRF-Token',csrf).send({email:`${email}@saathi.test`,password:'SaathiDemo2026!'});
+          expect(result.status).toBe(200);expect(result.body.user.role).toBe(role);
+        }
+        expect((await request(demoApp).get('/api/stops')).body.stops).toHaveLength(4);
+        expect((await request(demoApp).get('/api/routes')).body.routes).toHaveLength(3);
+        const count=await db().collection('departures').countDocuments();expect(count).toBeGreaterThan(0);
+        await seedDemo('SaathiDemo2026!',{hostedDemo:true});
+        expect(await db().collection('departures').countDocuments()).toBe(count);
+      } finally {await demoApp.locals.sessionStore.close();}
+    } finally {process.env.NODE_ENV=oldNodeEnv;await mongoose.disconnect();await connectDatabase(repl.getUri('saathi_test'));}
+  });
   it('signs demo visitors into separate passenger sessions without granting operator access',async()=>{
     const demoApp=createApp({mongoUri:repl.getUri('saathi_test'),sessionSecret:'test-secret-at-least-thirty-two-characters',appOrigin:origin,demoSignIn:true} as Parameters<typeof createApp>[0]);
     try {

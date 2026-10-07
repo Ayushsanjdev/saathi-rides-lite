@@ -42,6 +42,8 @@ The environment must be injected into both commands/processes. `npm run start` l
 
 ## Provision the first operator
 
+For a hosted portfolio demonstration, set `HOSTED_DEMO=true`. This explicitly selects the isolated `saathi_demo` database on the existing cluster and seeds the five public README accounts plus routes, stops, drivers and an upcoming timetable. Demo accounts appear in the sign-in dialog and use real authentication. The Atlas user needs read/write access to `saathi_demo`. HTTPS, secure session cookies and CSRF remain enabled; demo sessions use a separate cookie name. Disable this flag for a real transport service. Existing application data is not copied or modified. The seed runs on startup and preserves existing demo bookings; restart/redeploy to replenish missing route/date schedules.
+
 For a public preview, optionally set `DEMO_SIGN_IN=true` to show **Try demo** in the sign-in dialog. Each click creates a separate passenger account and signs it in without publishing a password. The endpoint requires CSRF protection and is rate-limited. These accounts use the same routes and booking system as other passengers; enable this only when demo bookings are appropriate. It does not seed routes or grant driver/operator access, and does not require `DEMO_MODE` or `ALLOW_DEMO_SEED`.
 
 Set `OPERATOR_NAME`, `OPERATOR_EMAIL`, `OPERATOR_PASSWORD` (minimum 12 characters) and `MONGODB_URI` through the hosting secret/environment interface. Run:

@@ -2,9 +2,21 @@ import {test,expect,type Page} from '@playwright/test';
 async function signIn(page:Page,role:'Passenger'|'Driver'|'Operator'){
   await page.goto('/');await page.getByRole('button',{name:'Sign in',exact:true}).click();
   await page.getByRole('button',{name:`Try ${role.toLowerCase()}`,exact:true}).click();
-  await page.getByRole('button',{name:'Sign in',exact:true}).last().click();
   await expect(page.getByRole('button',{name:'Account',exact:true}).first()).toBeVisible();
 }
+test('sample route dropdowns refresh rides and passenger counts update fares',async({page})=>{
+  await page.goto('/');
+  await page.getByRole('button',{name:'Tomorrow',exact:true}).click();
+  await page.getByRole('combobox',{name:'Destination',exact:true}).click();
+  await page.getByRole('option',{name:'Community clinic',exact:true}).click();
+  await expect(page.locator('.ride-card').first()).toContainText('Community clinic');
+  await page.getByRole('button',{name:'Find rides',exact:true}).click();
+  await page.getByRole('combobox',{name:'Destination',exact:true}).click();
+  await page.getByRole('option',{name:'Weekly market',exact:true}).click();
+  await expect(page.locator('.ride-card').first()).toContainText('Weekly market');
+  await page.getByRole('button',{name:'Add passenger',exact:true}).click();
+  await expect(page.locator('.ride-card .fare').first()).toContainText('₹50');
+});
 test('mobile booking and cancellation with a real account',async({page})=>{
   await signIn(page,'Passenger');
   await page.getByRole('button',{name:'Tomorrow',exact:true}).click();
@@ -23,7 +35,9 @@ test('mobile booking and cancellation with a real account',async({page})=>{
 test('operator creates a trip and driver accepts the assignment',async({page})=>{
   await signIn(page,'Operator');
   await page.getByRole('button',{name:'New departure',exact:true}).click();
-  await page.getByLabel('Departure date and time').fill(new Date(Date.now()+3*86400000).toISOString().slice(0,16));
+  await page.getByLabel('Departure date and time').fill(new Date(Date.now()+10*86400000+330*60000).toISOString().slice(0,16));
+  await page.getByRole('combobox',{name:'Driver',exact:true}).click();
+  await page.getByRole('option',{name:'Ramesh Kumar',exact:true}).click();
   await page.getByRole('button',{name:'Create departure',exact:true}).click();
   await expect(page.getByText('Departure created',{exact:true})).toBeVisible();
   await page.getByRole('button',{name:'Account',exact:true}).first().click();

@@ -14,17 +14,19 @@ import {token,csrf,authenticate,requireRole,actor,regenerate,saveSession} from '
 import {createBooking,cancelBooking} from './booking';
 import {scheduleDeparture,assignDriver,driverAction,cancelDeparture,collectCash,markNoShow} from './operations';
 import {bookingDTO,departureDTO} from './serializers';
-export interface AppConfig {mongoUri:string;sessionSecret:string;appOrigin:string;production?:boolean;trustProxy?:number;supportPhone?:string;demoSignIn?:boolean;}
+export interface AppConfig {mongoUri:string;sessionSecret:string;appOrigin:string;production?:boolean;trustProxy?:number;supportPhone?:string;demoSignIn?:boolean;hostedDemo?:boolean;}
 const id=(req:Request)=>parse(objectId,req.params.id);
 const pagination=(req:Request)=>parse(z.object({page:z.coerce.number().int().min(1).max(10000).default(1),limit:z.coerce.number().int().min(1).max(100).default(30)}),req.query);
 export function createApp(config:AppConfig){
+  if(config.hostedDemo&&new URL(config.mongoUri).pathname!=='/saathi_demo')throw new Error('Hosted demos require the isolated saathi_demo database.');
   const app=express();const sessionStore=MongoStore.create({mongoUrl:config.mongoUri,collectionName:'sessions',autoRemove:'native'});app.locals.sessionStore=sessionStore;app.disable('x-powered-by');app.set('trust proxy',config.trustProxy??0);
   app.use(helmet());app.use(express.json({limit:'16kb'}));
-  app.use(session({name:'saathi.sid',secret:config.sessionSecret,resave:false,saveUninitialized:false,store:sessionStore,cookie:{httpOnly:true,secure:config.production??false,sameSite:'lax',maxAge:7*86400000}}));
+  const cookieName=config.hostedDemo?'saathi.demo.sid':'saathi.sid';
+  app.use(session({name:cookieName,secret:config.sessionSecret,resave:false,saveUninitialized:false,store:sessionStore,cookie:{httpOnly:true,secure:config.production??false,sameSite:'lax',maxAge:7*86400000}}));
   app.use('/api',csrf(config.appOrigin));
   app.get('/api/health',(_req,res)=>res.json({status:'ok'}));
   app.get('/api/ready',(_req,res)=>res.status(mongoose.connection.readyState===1?200:503).json({status:mongoose.connection.readyState===1?'ready':'unavailable'}));
-  app.get('/api/config',(_req,res)=>res.json({supportPhone:config.supportPhone||null,demoSignIn:config.demoSignIn===true,demo:!config.production&&process.env.DEMO_MODE==='true'?{password:process.env.DEMO_PASSWORD}:null}));
+  app.get('/api/config',(_req,res)=>res.json({supportPhone:config.supportPhone||null,demoSignIn:config.demoSignIn===true,demo:config.hostedDemo?{password:'SaathiDemo2026!'}:!config.production&&process.env.DEMO_MODE==='true'?{password:process.env.DEMO_PASSWORD}:null}));
   app.get('/api/auth/csrf',async(req,res)=>{const csrfToken=token(req);await saveSession(req);res.json({csrfToken});});
   const authLimit=rateLimit({windowMs:15*60000,limit:100,standardHeaders:'draft-8',legacyHeaders:false,message:{error:{code:'RATE_LIMITED',message:'Too many attempts. Try again later.'}}});
   const demoLimit=rateLimit({windowMs:15*60000,limit:20,standardHeaders:'draft-8',legacyHeaders:false,message:{error:{code:'RATE_LIMITED',message:'Too many demo sign-ins. Try again later.'}}});
@@ -46,7 +48,7 @@ export function createApp(config:AppConfig){
     if(!user||!await argon2.verify(user.passwordHash,input.password))throw new AppError(401,'INVALID_CREDENTIALS','Email or password is incorrect.');
     await regenerate(req);req.session.userId=String(user._id);const csrfToken=token(req);await saveSession(req);res.json({user:{id:String(user._id),name:user.name,email:user.email,role:user.role,phone:user.phone},csrfToken});
   });
-  app.post('/api/auth/logout',(req,res,next)=>req.session.destroy(e=>{if(e)return next(e);res.clearCookie('saathi.sid',{httpOnly:true,secure:config.production??false,sameSite:'lax'});res.json({ok:true});}));
+  app.post('/api/auth/logout',(req,res,next)=>req.session.destroy(e=>{if(e)return next(e);res.clearCookie(cookieName,{httpOnly:true,secure:config.production??false,sameSite:'lax'});res.json({ok:true});}));
   app.get('/api/stops',async(_req,res)=>{const stops=await Stop.find({active:true}).sort({locality:1,name:1}).limit(200).lean();res.json({stops:stops.map(s=>({id:String(s._id),name:s.name,locality:s.locality,active:s.active}))});});
   app.get('/api/routes',async(_req,res)=>res.json({routes:await routesDTO(true)}));
   app.get('/api/departures',async(req,res)=>{
