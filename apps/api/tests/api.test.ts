@@ -1,4 +1,4 @@
-import { beforeAll, afterAll, beforeEach, describe, it, expect } from 'vitest';
+import { beforeAll, afterAll, beforeEach, describe, it, expect, vi } from 'vitest';
 import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 import argon2 from 'argon2';
@@ -99,6 +99,19 @@ describe('native authentication',()=>{
 });
 
 describe('sessions and permissions',()=>{
+  it('always publishes seeded local demo credentials without a separate display flag',async()=>{
+    vi.stubEnv('ALLOW_DEMO_SEED','true');vi.stubEnv('DEMO_MODE','');vi.stubEnv('DEMO_PASSWORD','SaathiDemo2026!');
+    try {
+      expect((await request(app).get('/api/config')).body.demo).toEqual({password:'SaathiDemo2026!'});
+      const productionApp=createApp({mongoUri:repl.getUri('saathi_test'),sessionSecret:'test-secret-at-least-thirty-two-characters',appOrigin:origin,production:true});
+      try{
+        expect((await request(productionApp).get('/api/config')).body.demo).toBeNull();
+        // Wait for session-store initialization before closing this short-lived app.
+        await request(productionApp).get('/api/auth/csrf');
+      }
+      finally{await productionApp.locals.sessionStore.close();}
+    }finally{vi.unstubAllEnvs();}
+  });
   it('seeds all README demo roles and bookable routes only in the isolated hosted database',async()=>{
     const oldNodeEnv=process.env.NODE_ENV;process.env.NODE_ENV='production';
     try {
