@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Modal, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLanguage } from "./language";
-import { Button, Copy, styles, colors } from "./ui";
+import { Button, Copy, useUI } from "./ui";
 export function Picker({
   label,
   value,
@@ -16,6 +16,7 @@ export function Picker({
   onChange: (value: string) => void;
   disabled?: boolean;
 }) {
+  const { colors, styles } = useUI();
   const { t } = useLanguage();
   const [open, setOpen] = useState(false);
   return (

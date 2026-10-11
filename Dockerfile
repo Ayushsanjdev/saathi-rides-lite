@@ -1,13 +1,26 @@
 FROM node:24-bookworm-slim AS builder
 WORKDIR /app
+RUN corepack enable
 COPY . .
-RUN npm ci --workspace @saathi/api --workspace @saathi/web --workspace @saathi/contracts --workspace @saathi/core --include-workspace-root && npm run build && npm prune --omit=dev --workspace @saathi/api --workspace @saathi/web --workspace @saathi/contracts --workspace @saathi/core --include-workspace-root
+RUN pnpm --filter saathi-rides --filter @saathi/api... --filter @saathi/web... install --frozen-lockfile \
+    && pnpm build
+
+# Install API runtime dependencies from the same lockfile without web/mobile tooling.
+FROM node:24-bookworm-slim AS api-dependencies
+WORKDIR /app
+RUN corepack enable
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/api/package.json ./apps/api/package.json
+COPY packages/contracts ./packages/contracts
+RUN pnpm --filter @saathi/api... install --prod --frozen-lockfile --config.node-linker=isolated
 
 FROM node:24-bookworm-slim AS api
 WORKDIR /app
 ENV NODE_ENV=production
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/node_modules ./node_modules
+COPY --from=api-dependencies /app/package.json ./package.json
+COPY --from=api-dependencies /app/node_modules ./node_modules
+COPY --from=api-dependencies /app/apps/api ./apps/api
+COPY --from=api-dependencies /app/packages/contracts ./packages/contracts
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
 USER node
 EXPOSE 4000

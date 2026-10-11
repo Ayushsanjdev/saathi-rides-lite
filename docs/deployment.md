@@ -2,16 +2,16 @@
 
 ## Local preview without Docker
 
-Run `npm ci` then `npm run dev`. The database persists under `.data/mongo` and runs on 27018. There is no automatic wipe. To start a fresh demonstration, stop the runner and move `.data` to a backup directory yourself; do not delete data you need. The seed preserves existing users/bookings and adds a fresh rolling timetable only when no future scheduled departure remains.
+Run `pnpm install --frozen-lockfile` then `pnpm dev`. The database persists under `.data/mongo` and runs on 27018. There is no automatic wipe. To start a fresh demonstration, stop the runner and move `.data` to a backup directory yourself; do not delete data you need. The seed preserves existing users/bookings and adds a fresh rolling timetable only when no future scheduled departure remains.
 
 ## External MongoDB development
 
 1. Copy `.env.example` to `.env`.
 2. Set a replica-set `MONGODB_URI`, a random `SESSION_SECRET` of at least 32 characters, and `APP_ORIGIN=http://127.0.0.1:3000`.
-3. For an isolated demo database, set `ALLOW_DEMO_SEED=true` and your own `DEMO_PASSWORD`, then run `npm run seed`.
-4. Start `npm run dev`. With `MONGODB_URI` configured, this uses that database and does not launch the local MongoDB child.
+3. For an isolated demo database, set `ALLOW_DEMO_SEED=true` and your own `DEMO_PASSWORD`, then run `pnpm seed`.
+4. Start `pnpm dev`. With `MONGODB_URI` configured, this uses that database and does not launch the local MongoDB child.
 
-`npm run dev:external` starts the separate API and Next development commands; inject the environment into both processes. The normal `npm run dev` runner reads the root `.env` and handles propagation for you.
+`pnpm dev:external` starts the separate API and Next development commands; inject the environment into both processes. The normal `pnpm dev` runner reads the root `.env` and handles propagation for you.
 
 ## Production configuration
 
@@ -33,12 +33,12 @@ Use Node 24-compatible hosting for both services and an authenticated MongoDB re
 Build and start:
 
 ```bash
-npm ci
-npm run build
-npm run start
+pnpm install --frozen-lockfile
+pnpm build
+pnpm start
 ```
 
-The environment must be injected into both commands/processes. `npm run start` launches Express and `next start`; the Next config produces standalone output as well for container use. The server-side API proxy reads its upstream at runtime, avoiding a backend address baked into the frontend build.
+The environment must be injected into both commands/processes. `pnpm start` launches Express and `next start`; the Next config produces standalone output as well for container use. The server-side API proxy reads its upstream at runtime, avoiding a backend address baked into the frontend build.
 
 ## Provision the first operator
 
@@ -49,7 +49,7 @@ For a public preview, optionally set `DEMO_SIGN_IN=true` to show **Try demo** in
 Set `OPERATOR_NAME`, `OPERATOR_EMAIL`, `OPERATOR_PASSWORD` (minimum 12 characters) and `MONGODB_URI` through the hosting secret/environment interface. Run:
 
 ```bash
-npm run provision:operator
+pnpm provision:operator
 ```
 
 For a built API container, use:

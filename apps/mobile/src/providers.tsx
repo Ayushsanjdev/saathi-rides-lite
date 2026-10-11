@@ -20,6 +20,7 @@ import { LanguageContext } from "./language";
 export { useLanguage } from "./language";
 import { SessionController } from "./session-controller";
 import { api, setToken, onUnauthorized } from "./api";
+import { ThemeProvider } from "./theme";
 const languageKey = "saathi-language";
 const NetworkContext = createContext(true);
 const SessionContext = createContext<SessionController | null>(null);
@@ -100,7 +101,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <SessionContext.Provider value={session}>
         <NetworkContext.Provider value={online}>
           <LanguageContext.Provider value={{ language, setLanguage }}>
-            {children}
+            <ThemeProvider>{children}</ThemeProvider>
           </LanguageContext.Provider>
         </NetworkContext.Provider>
       </SessionContext.Provider>

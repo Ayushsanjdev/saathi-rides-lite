@@ -4,15 +4,17 @@ A mobile-first, full-stack scheduled e-rickshaw booking project. Passengers rese
 
 ## Native mobile app
 
-Android and iOS source lives in `apps/mobile`. See [mobile setup and build instructions](../apps/mobile/README.md). Run `npm run dev:mobile` for the API/web proxy and `npm run mobile` in a second terminal for Metro. Passenger and driver workflows are available natively; operator administration stays on the web.
+Android and iOS source lives in `apps/mobile`. See [mobile setup and build instructions](../apps/mobile/README.md). Run `pnpm dev:mobile` for the API/web proxy and `pnpm mobile` in a second terminal for Metro. Passenger and driver workflows are available natively; operator administration stays on the web.
 
 ## Start here
 
-Requires Node.js 24 and npm. From the project root:
+This repository uses pnpm workspaces with one root `pnpm-lock.yaml`. Shared packages use `workspace:*` so they resolve locally. `pnpm-workspace.yaml` retains the React/native version overrides and uses a hoisted install layout for Expo and the existing runners. Add dependencies with `pnpm --filter @saathi/mobile add <package>` (or the appropriate app); add root tooling with `pnpm add -Dw <package>`.
+
+Requires Node.js 24 and pnpm 11.24.0. Enable pnpm with `corepack enable` (or install `pnpm@11.24.0` globally), then run from the project root:
 
 ```bash
-npm ci
-npm run dev
+pnpm install --frozen-lockfile
+pnpm dev
 ```
 
 Open **http://127.0.0.1:3000**. Use this hostname consistently because session cookies and CSRF origin checks are tied to it.
@@ -83,17 +85,17 @@ Frontend: Next.js 16, React 19, Tailwind 4, shadcn/ui/Radix, TanStack Query. Bac
 ## Commands
 
 ```bash
-npm run typecheck
-npm test
-npm run build
-npm run test:e2e
+pnpm typecheck
+pnpm test
+pnpm build
+pnpm test:e2e
 ```
 
 Browser tests need a Chromium installation. To keep downloads in the project:
 
 ```bash
-PLAYWRIGHT_BROWSERS_PATH=.cache/playwright npx playwright install chromium
-PLAYWRIGHT_BROWSERS_PATH=.cache/playwright npm run test:e2e
+PLAYWRIGHT_BROWSERS_PATH=.cache/playwright pnpm exec playwright install chromium
+PLAYWRIGHT_BROWSERS_PATH=.cache/playwright pnpm test:e2e
 ```
 
 See [testing](testing.md) for sandbox limitations and recorded evidence. Docker/production instructions are in [deployment](deployment.md).
@@ -107,3 +109,7 @@ Read [learning-guide](learning-guide.md) first to understand a request end to en
 This is working scheduled-ride software and a portfolio project with web and Expo Android/iOS clients. Phone OTP, password recovery, electronic payment settlement, GPS tracking, push notifications, public hosted infrastructure and staffed support are not integrated. Email/password and direct cash payment make the demonstration self-contained. Native runtime validation and distribution requirements are recorded in [mobile verification](mobile/verification.md).
 
 An actual transport pilot needs state-specific operating approvals, driver/vehicle checks, insurance, suitable roads, fair fares and staffed incident handling. Default contact numbers and vehicle registrations are fictitious. Do not use demo accounts or an unauthenticated local MongoDB for real passengers.
+
+### Appearance
+
+The web header and mobile Account screen offer Light, Dark, and System modes. System follows the device setting. Each app remembers its own appearance preference on the current device.

@@ -16,16 +16,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { date, time, money } from "@saathi/core";
 import type { DepartureDTO } from "@saathi/contracts";
 import { useLanguage } from "./language";
-export const colors = {
-  ink: "#163b53",
-  green: "#176b50",
-  background: "#f5f8fa",
-  card: "#ffffff",
-  muted: "#5f7281",
-  border: "#dce5eb",
-  red: "#b42318",
-};
-export const styles = StyleSheet.create({
+import { useTheme, palettes } from "./theme";
+const createStyles = (colors: typeof palettes.light) => StyleSheet.create({
   page: { flex: 1, backgroundColor: colors.background },
   content: { padding: 20, gap: 18, paddingBottom: 36 },
   title: {
@@ -54,7 +46,7 @@ export const styles = StyleSheet.create({
   stack: { gap: 12 },
   line: { borderTopWidth: 1, borderColor: colors.border, paddingTop: 12 },
   error: { color: colors.red, fontSize: 15, lineHeight: 22 },
-  banner: { padding: 14, backgroundColor: "#fff3cd", borderRadius: 10 },
+  banner: { padding: 14, backgroundColor: colors.warning, borderRadius: 10 },
   price: { fontSize: 25, fontWeight: "700", color: colors.green },
   button: {
     minHeight: 48,
@@ -70,7 +62,7 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-  buttonText: { fontSize: 16, fontWeight: "600", color: colors.card },
+  buttonText: { fontSize: 16, fontWeight: "600", color: colors.buttonText },
   input: {
     borderWidth: 1,
     borderColor: colors.border,
@@ -87,7 +79,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 6,
-    backgroundColor: "#e7f2eb",
+    backgroundColor: colors.success,
   },
   route: {
     borderLeftWidth: 3,
@@ -103,6 +95,8 @@ export const styles = StyleSheet.create({
   },
   disabled: { opacity: 0.45 },
 });
+const themeStyles = { light: createStyles(palettes.light), dark: createStyles(palettes.dark) };
+export function useUI() { const theme = useTheme(); return { ...theme, styles: themeStyles[theme.scheme] }; }
 export function Page({
   title,
   subtitle,
@@ -112,6 +106,7 @@ export function Page({
   subtitle?: string;
   children: React.ReactNode;
 }) {
+  const { colors, styles } = useUI();
   const { t } = useLanguage();
   const insets = useSafeAreaInsets();
   return (
@@ -142,10 +137,12 @@ export function Copy({
   children: string;
   muted?: boolean;
 }) {
+  const { colors, styles } = useUI();
   const { t } = useLanguage();
   return <Text style={muted ? styles.muted : styles.text}>{t(children)}</Text>;
 }
 export function Card({ children }: { children: React.ReactNode }) {
+  const { colors, styles } = useUI();
   return <View style={styles.card}>{children}</View>;
 }
 export function Button({
@@ -155,6 +152,7 @@ export function Button({
   busy = false,
   secondary = false,
   label,
+  selected,
 }: {
   title: string;
   onPress: () => void;
@@ -162,13 +160,15 @@ export function Button({
   busy?: boolean;
   secondary?: boolean;
   label?: string;
+  selected?: boolean;
 }) {
+  const { colors, styles } = useUI();
   const { t } = useLanguage();
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={label ?? t(title)}
-      accessibilityState={{ disabled: disabled || busy, busy }}
+      accessibilityState={{ disabled: disabled || busy, busy, selected }}
       disabled={disabled || busy}
       onPress={onPress}
       style={({ pressed }) => [
@@ -179,7 +179,7 @@ export function Button({
       ]}
     >
       {busy ? (
-        <ActivityIndicator color={secondary ? colors.green : "white"} />
+        <ActivityIndicator color={secondary ? colors.green : colors.buttonText} />
       ) : (
         <Text style={[styles.buttonText, secondary && { color: colors.ink }]}>
           {t(title)}
@@ -189,11 +189,13 @@ export function Button({
   );
 }
 export function Field({ label, ...props }: TextInputProps & { label: string }) {
+  const { colors, styles, scheme } = useUI();
   const { t } = useLanguage();
   return (
     <View style={{ gap: 7 }}>
       <Copy>{label}</Copy>
       <TextInput
+        keyboardAppearance={scheme}
         {...props}
         accessibilityLabel={t(label)}
         placeholderTextColor={colors.muted}
@@ -203,6 +205,7 @@ export function Field({ label, ...props }: TextInputProps & { label: string }) {
   );
 }
 export function ErrorMessage({ error }: { error: unknown }) {
+  const { colors, styles } = useUI();
   if (!error) return null;
   return (
     <Text accessibilityRole="alert" style={styles.error}>
@@ -223,6 +226,7 @@ export function QueryState({
   retry: () => void;
   emptyText?: string;
 }) {
+  const { colors, styles } = useUI();
   return pending ? (
     <ActivityIndicator
       color={colors.green}
@@ -240,6 +244,7 @@ export function QueryState({
   ) : null;
 }
 export function Status({ value }: { value: string }) {
+  const { colors, styles } = useUI();
   const labels: Record<string, string> = {
     scheduled: "Scheduled",
     "in-progress": "In progress",
@@ -262,12 +267,12 @@ export function Status({ value }: { value: string }) {
         styles.tag,
         {
           backgroundColor: bad
-            ? "#fde8e7"
+            ? colors.danger
             : pending
-              ? "#fff3cd"
+              ? colors.warning
               : value === "in-progress"
-                ? "#e8f1ff"
-                : "#e7f2eb",
+                ? colors.info
+                : colors.success,
         },
       ]}
     >
@@ -276,6 +281,7 @@ export function Status({ value }: { value: string }) {
   );
 }
 export function RouteInfo({ departure }: { departure: DepartureDTO }) {
+  const { colors, styles } = useUI();
   const { t } = useLanguage();
   return (
     <>
@@ -298,6 +304,7 @@ export function RouteInfo({ departure }: { departure: DepartureDTO }) {
   );
 }
 export function Fare({ paise }: { paise: number }) {
+  const { colors, styles } = useUI();
   return <Text style={styles.price}>{money(paise)}</Text>;
 }
 export function Phone({
@@ -307,6 +314,7 @@ export function Phone({
   phone: string;
   title?: string;
 }) {
+  const { colors, styles } = useUI();
   const [error, setError] = React.useState<Error | null>(null);
   return (
     <>

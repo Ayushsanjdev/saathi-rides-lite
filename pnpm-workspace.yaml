@@ -1,0 +1,24 @@
+packages:
+  - apps/*
+  - packages/*
+
+# Preserve the flat dependency layout used by Expo and the local runners.
+nodeLinker: hoisted
+
+overrides:
+  "esbuild": "0.28.2"
+  "react": "19.2.3"
+  "react-dom": "19.2.3"
+  "react-native-reanimated": "4.5.1"
+  "react-native-worklets": "0.10.1"
+  "react-native-gesture-handler": "2.32.0"
+  "@types/react": "19.2.18"
+  "@types/react-dom": "19.2.7"
+  "shell-quote": "1.12.0"
+
+# Native/tool binaries used by the existing app and build workflows.
+allowBuilds:
+  argon2: true
+  esbuild: true
+  fsevents: true
+  mongodb-memory-server: false

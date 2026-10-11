@@ -9,8 +9,9 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSession, useLanguage, useOnline } from "../../src/providers";
-import { colors, styles } from "../../src/ui";
+import { useUI } from "../../src/ui";
 export default function TabLayout() {
+  const { colors, styles } = useUI();
   const { user, loading } = useSession();
   const { language, setLanguage, t } = useLanguage();
   const online = useOnline();

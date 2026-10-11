@@ -17,19 +17,9 @@ import { bookingIntents } from "./booking-storage";
 import type { BookingIntent } from "./booking-intent";
 import { BookingReview } from "./booking-review";
 import { Picker } from "./picker";
-import {
-  Page,
-  Card,
-  Copy,
-  Button,
-  Field,
-  ErrorMessage,
-  Fare,
-  RouteInfo,
-  QueryState,
-  styles,
-} from "./ui";
+import { Page, Card, Copy, Button, Field, ErrorMessage, Fare, RouteInfo, QueryState, useUI } from "./ui";
 export function BookScreen() {
+  const { colors, styles, scheme } = useUI();
   const { user, controller } = useSession();
   const online = useOnline();
   const { t } = useLanguage();
@@ -200,6 +190,7 @@ export function BookScreen() {
             />
             {showDate && (
               <DateTimePicker
+                themeVariant={scheme}
                 value={new Date(`${travelDate}T12:00:00`)}
                 mode="date"
                 minimumDate={new Date(`${localDate()}T00:00:00`)}

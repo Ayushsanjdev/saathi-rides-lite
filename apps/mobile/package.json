@@ -16,8 +16,8 @@
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/datetimepicker": "9.1.0",
     "@react-native-community/netinfo": "12.0.1",
-    "@saathi/contracts": "*",
-    "@saathi/core": "*",
+    "@saathi/contracts": "workspace:*",
+    "@saathi/core": "workspace:*",
     "@tanstack/react-query": "5.104.1",
     "expo": "~57.0.27",
     "expo-build-properties": "~57.0.22",
@@ -44,6 +44,7 @@
     "@types/jest": "^29.5.14",
     "jest": "^29.7.0",
     "jest-expo": "~57.0.5",
-    "react-test-renderer": "19.2.3"
+    "react-test-renderer": "19.2.3",
+    "typescript": "6.0.3"
   }
 }

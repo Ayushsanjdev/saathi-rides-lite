@@ -38,7 +38,7 @@ const mobileMode=process.argv.includes('--mobile');
 const webHost=mobileMode?'0.0.0.0':'127.0.0.1';
 const web=spawn(process.execPath,[path.resolve('node_modules/next/dist/bin/next'),'dev','--webpack','--hostname',webHost],{cwd:path.resolve('apps/web'),env:process.env,stdio:'inherit'});
 console.log(`Saathi Rides: ${process.env.APP_ORIGIN}`);
-if(mobileMode)console.log('Mobile access enabled on your LAN. In another terminal run npm run mobile. Set EXPO_PUBLIC_API_URL to http://<computer-ip>:3000/api on devices.');
+if(mobileMode)console.log('Mobile access enabled on your LAN. In another terminal run pnpm mobile. Set EXPO_PUBLIC_API_URL to http://<computer-ip>:3000/api on devices.');
 if(process.env.DEMO_MODE==='true')console.log('Demo accounts: passenger@saathi.test / driver@saathi.test / operator@saathi.test. Password:',process.env.DEMO_PASSWORD);
 let stopping=false;
 async function stop(){if(stopping)return;stopping=true;web.kill('SIGTERM');await new Promise<void>(resolve=>api.close(()=>resolve()));await app.locals.sessionStore.close();await mongoose.disconnect();if(repl)await repl.stop({doCleanup:false,force:false});process.exit(0);}

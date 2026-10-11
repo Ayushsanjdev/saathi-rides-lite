@@ -1,5 +1,7 @@
 # Mobile verification
 
+The npm commands in the historical results below predate the pnpm migration. Use the current pnpm commands in [mobile setup](../../apps/mobile/README.md). The [11 October migration checks](../testing.md) include mobile type checks, all 17 tests, Android/iOS bundle exports and 21/21 Expo Doctor checks.
+
 Verified locally on 9 October 2026 with Node 24 on macOS.
 
 | Check | Result |
@@ -21,7 +23,7 @@ The final browser run also supplied deliberately different inherited service por
 
 ## Native runtime boundaries
 
-Bundle export is not a signed APK or iOS binary. CocoaPods and the Android SDK/emulator tools are unavailable on this host, so native binary compilation was not completed. Expo Go installation was attempted in an iOS simulator, but UI access timed out before a verified app journey; no simulator or physical-device journey is claimed as passing.
+Bundle export is not a signed APK or iOS binary. CocoaPods and the Android SDK were initially unavailable on 9 October. After installing them, an ARM64 Android debug APK and an Apple Silicon iOS simulator app compiled successfully on 10 October. These development binaries require Metro; no store-signed release was produced. The 11 October pnpm migration verified bundle exports rather than repeating native binary compilation. Expo Go installation was attempted in an iOS simulator, but UI access timed out before a verified app journey; no simulator or physical-device journey is claimed as passing.
 
 Before distribution, run the passenger and driver journeys on both platforms, including interrupted booking retries after restart, Hindi labels, phone links, date controls, background/foreground refresh and intermittent connectivity. EAS profiles are supplied; no remote project, signing credentials, cloud build or store submission was created.
 

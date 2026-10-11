@@ -1,4 +1,8 @@
 export const hindi: Record<string, string> = {
+  "Appearance": "रंग थीम",
+  "Light": "हल्का",
+  "Dark": "गहरा",
+  "System": "डिवाइस के अनुसार",
   "Confirm cash collection": "नकद प्राप्ति की पुष्टि करें",
   "Try second driver": "दूसरे चालक का डेमो",
   "Try third driver": "तीसरे चालक का डेमो",

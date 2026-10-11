@@ -1,6 +1,6 @@
 import React from "react";
 import { ActivityIndicator, View } from "react-native";
-import { colors, styles } from "./ui";
+import { useUI } from "./ui";
 export function SessionGate({
   loading,
   children,
@@ -8,6 +8,7 @@ export function SessionGate({
   loading: boolean;
   children: React.ReactNode;
 }) {
+  const { colors, styles } = useUI();
   return loading ? (
     <View style={[styles.page, { justifyContent: "center" }]}>
       <ActivityIndicator

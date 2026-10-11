@@ -2,15 +2,7 @@ import React, { useState } from "react";
 import { View } from "react-native";
 import { ApiError } from "@saathi/core";
 import type { BookingIntent } from "./booking-intent";
-import {
-  Button,
-  Card,
-  Copy,
-  ErrorMessage,
-  Fare,
-  RouteInfo,
-  styles,
-} from "./ui";
+import { Button, Card, Copy, ErrorMessage, Fare, RouteInfo, useUI } from "./ui";
 export function BookingReview({
   intent,
   online,
@@ -24,6 +16,7 @@ export function BookingReview({
   canDiscard?: boolean;
   onDiscard?: () => Promise<void>;
 }) {
+  const { colors, styles } = useUI();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   async function confirm() {

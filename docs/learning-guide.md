@@ -4,7 +4,7 @@ This guide connects the code to backend concepts. Start with one booking, then f
 
 ## 1. What runs on your computer
 
-`npm run dev` runs `scripts/local.ts`. It starts a real MongoDB process with persistent files, waits for a replica-set primary, connects Mongoose, creates indexes, adds demo users/routes and starts two app processes:
+`pnpm dev` runs `scripts/local.ts`. It starts a real MongoDB process with persistent files, waits for a replica-set primary, connects Mongoose, creates indexes, adds demo users/routes and starts two app processes:
 
 - Next.js on port 3000 renders the browser experience.
 - Express on port 4000 handles API requests and business rules.

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View } from "react-native";
 import type { DepartureDTO } from "@saathi/contracts";
-import { Button, Copy, ErrorMessage, styles } from "./ui";
+import { Button, Copy, ErrorMessage, useUI } from "./ui";
 import { useLanguage } from "./language";
 export type TripAction = "accept" | "decline" | "start" | "complete";
 const labels: Record<TripAction, string> = {
@@ -19,6 +19,7 @@ export function TripActions({
   online: boolean;
   run: (action: TripAction) => Promise<void>;
 }) {
+  const { colors, styles } = useUI();
   const { t } = useLanguage();
   const [selected, setSelected] = useState<TripAction | null>(null);
   const [busy, setBusy] = useState(false);

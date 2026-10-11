@@ -2,7 +2,8 @@
 import {useState,useEffect} from 'react';
 import {QueryClient,QueryClientProvider,useQuery,useMutation,useQueryClient} from '@tanstack/react-query';
 import {BusFront,House,Ticket,LifeBuoy,ClipboardList,Users,Route,History,MapPin,WifiOff,CalendarDays,UserRound} from 'lucide-react';
-import {Toaster,toast} from 'sonner';
+import {toast} from 'sonner';
+import {Appearance,ThemeToaster} from './theme-provider';
 import {Button} from '@/components/ui/button';
 import {Dialog,DialogContent,DialogHeader,DialogTitle,DialogDescription} from '@/components/ui/dialog';
 import {api,ApiError} from '@/lib/api';
@@ -18,7 +19,7 @@ export default function App(){
   const [language,setLanguage]=useState<Language>('en');
   useEffect(()=>{if(localStorage.getItem('saathi-language')==='hi')setLanguage('hi');},[]);
   useEffect(()=>{document.documentElement.lang=language;localStorage.setItem('saathi-language',language);},[language]);
-  return <QueryClientProvider client={client}><LanguageContext.Provider value={{language,setLanguage}}><Workspace/><Toaster richColors position="top-center"/></LanguageContext.Provider></QueryClientProvider>;
+  return <QueryClientProvider client={client}><LanguageContext.Provider value={{language,setLanguage}}><Workspace/><ThemeToaster/></LanguageContext.Provider></QueryClientProvider>;
 }
 function Workspace(){
   const {t,language,setLanguage}=useLanguage();const qc=useQueryClient();const [view,setView]=useState('book');const [auth,setAuth]=useState(false);const [account,setAccount]=useState(false);const [offline,setOffline]=useState(false);
@@ -30,7 +31,7 @@ function Workspace(){
   const active=views.some(v=>v.id===view)?view:views[0].id;
   const logout=useMutation({mutationFn:()=>api('/auth/logout',{method:'POST',body:{}}),onSuccess:()=>{qc.clear();qc.setQueryData(['me'],null);setAccount(false);setView('book');},onError:e=>toast.error(e.message)});
   const nav=(mobile=false)=><nav className={mobile?'bottom-nav':undefined} aria-label={mobile?'Mobile navigation':'Main navigation'}>{views.map(v=><button key={v.id} className={active===v.id?'active':''} aria-current={active===v.id?'page':undefined} onClick={()=>setView(v.id)}><v.icon size={20}/><span>{t(v.label)}</span></button>)}{mobile&&<button onClick={()=>user?setAccount(true):setAuth(true)}><UserRound/><span>{t('Account')}</span></button>}</nav>;
-  return <div className="app-shell"><header className="topbar"><div className="brand"><span className="brand-mark"><BusFront size={24}/></span>saathi<span className="sr-only">Rides</span></div><div className="header-actions"><Button variant="ghost" className="language-button" onClick={()=>setLanguage(language==='en'?'hi':'en')}>{language==='en'?'हिन्दी':'English'}</Button>{user?<Button variant="ghost" aria-label="Account" onClick={()=>setAccount(true)}><span className="avatar">{user.name.slice(0,1).toUpperCase()}</span><span className="hidden sm:inline">{user.name.split(' ')[0]}</span></Button>:<Button variant="outline" onClick={()=>setAuth(true)}>{t('Sign in')}</Button>}</div></header>
+  return <div className="app-shell"><header className="topbar"><div className="brand"><span className="brand-mark"><BusFront size={24}/></span>saathi<span className="sr-only">Rides</span></div><div className="header-actions"><Appearance/><Button variant="ghost" className="language-button" onClick={()=>setLanguage(language==='en'?'hi':'en')}>{language==='en'?'हिन्दी':'English'}</Button>{user?<Button variant="ghost" aria-label="Account" onClick={()=>setAccount(true)}><span className="avatar">{user.name.slice(0,1).toUpperCase()}</span><span className="hidden sm:inline">{user.name.split(' ')[0]}</span></Button>:<Button variant="outline" onClick={()=>setAuth(true)}>{t('Sign in')}</Button>}</div></header>
   {offline&&<div className="offline-bar" role="status"><WifiOff size={16} className="inline mr-2"/>{t('Check your connection and retry.')} {t('Booking is not confirmed until the service responds.')}</div>}
   <div className="layout"><aside className="sidebar">{nav()}<div className="local-area"><MapPin size={19}/><strong>{t('Rampur & nearby towns')}</strong>{t('Shared e-rickshaw')}{config.data?.demo&&<p className="mt-3">{t('Demo service')}</p>}</div></aside><main className="main-content">
   {me.error?<ErrorState error={me.error} retry={()=>me.refetch()}/>:active==='help'?<Help config={config.data}/>:role==='operator'&&user?<OperatorView user={user} view={active}/>:role==='driver'&&user?<DriverView user={user} view={active}/>:<Rider user={user||null} view={active} navigate={setView} signIn={()=>setAuth(true)} demo={!!config.data?.demo}/>}

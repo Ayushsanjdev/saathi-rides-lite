@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View } from "react-native";
 import { loginSchema, registerSchema } from "@saathi/contracts";
-import { Button, Card, Copy, ErrorMessage, Field, styles } from "./ui";
+import { Button, Card, Copy, ErrorMessage, Field, useUI } from "./ui";
 export function AuthForm({
   online,
   submit,
@@ -9,6 +9,7 @@ export function AuthForm({
   online: boolean;
   submit: (path: "/login" | "/register", body: unknown) => Promise<void>;
 }) {
+  const { colors, styles } = useUI();
   const [register, setRegister] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

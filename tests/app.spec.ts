@@ -52,3 +52,23 @@ test('Hindi interface and keyboard-friendly login',async({page})=>{
   await expect(page.getByRole('heading',{name:'कहाँ जाना है?',exact:true})).toBeVisible();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
+
+test('appearance follows the system and remembers explicit light and dark choices',async({page})=>{
+  await page.emulateMedia({colorScheme:'dark'});
+  await page.goto('/');
+  const appearance=page.getByRole('combobox',{name:'Appearance',exact:true});
+  await expect(appearance).toHaveValue('system');
+  await expect(page.locator('html')).toHaveClass(/dark/);
+  await appearance.selectOption('light');
+  await expect(page.locator('html')).toHaveClass(/light/);
+  await page.reload();
+  await expect(appearance).toHaveValue('light');
+  await appearance.selectOption('dark');
+  await expect(page.locator('html')).toHaveClass(/dark/);
+  await page.reload();
+  await expect(appearance).toHaveValue('dark');
+  await appearance.selectOption('system');
+  await page.emulateMedia({colorScheme:'light'});
+  await expect(page.locator('html')).toHaveClass(/light/);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});

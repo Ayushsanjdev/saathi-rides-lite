@@ -6,7 +6,7 @@ const config: ExpoConfig = {
   scheme: "saathi",
   platforms: ["android", "ios"],
   orientation: "portrait",
-  userInterfaceStyle: "light",
+  userInterfaceStyle: "automatic",
   icon: "./assets/icon.png",
   ios: { bundleIdentifier: "com.saathirides.mobile", supportsTablet: true },
   android: {
@@ -28,6 +28,7 @@ const config: ExpoConfig = {
         image: "./assets/splash.png",
         imageWidth: 160,
         backgroundColor: "#f5f8fa",
+        dark: { backgroundColor: "#101c25" },
       },
     ],
   ],

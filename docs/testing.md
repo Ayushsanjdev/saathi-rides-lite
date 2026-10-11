@@ -1,5 +1,15 @@
 # Verification and testing
 
+## pnpm migration — 11 October 2026
+
+The repository now pins pnpm 11.24.0 and uses one root `pnpm-lock.yaml`. Existing direct dependency versions were retained; mobile has its own Expo-compatible TypeScript 6.0.3 while the other workspaces retain TypeScript 7.0.2.
+
+Verified: all workspace type checks, 33 API/shared tests, 17 mobile tests, four browser journeys, API/web production builds, Android/iOS JavaScript exports, and all 21 Expo Doctor checks. A frozen offline install also passed. The web build needed a clean generated `.next` cache after an initial sandboxed attempt.
+
+The Docker API dependency layout was reproduced in a temporary directory with a frozen lockfile and its Argon2/Express/Mongoose/Zod imports verified. Docker itself is unavailable, so the Linux image has not been built or run. The API image uses an isolated production dependency layout to include only its runtime graph; local development remains hoisted.
+
+The npm commands and results below are historical. Current setup commands are in [the setup guide](README.md).
+
 For the Expo addition verified on 9 October 2026, see [mobile verification](mobile/verification.md). That record supersedes the earlier test counts and workspace dependency-audit results below.
 
 Verified locally on 3 October 2026 with Node.js 24 on macOS. These results establish local functionality, not deployment to a public service or performance on a physical low-end Android device.

@@ -4,7 +4,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { SessionGate } from "../src/session-gate";
 import { Providers, useSession } from "../src/providers";
-import { colors } from "../src/ui";
+import { useUI } from "../src/ui";
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
@@ -15,10 +15,11 @@ export default function RootLayout() {
   );
 }
 function Navigation() {
+  const { colors, scheme } = useUI();
   const { loading } = useSession();
   return (
     <SessionGate loading={loading}>
-      <StatusBar style="dark" />
+      <StatusBar style={scheme === "dark" ? "light" : "dark"} />
       <Stack
         screenOptions={{
           headerStyle: { backgroundColor: colors.background },

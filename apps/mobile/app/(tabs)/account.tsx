@@ -2,7 +2,9 @@ import React, { useState } from "react";
 import { router } from "expo-router";
 import { useSession, useLanguage, useOnline } from "../../src/providers";
 import { Page, Card, Copy, Button, ErrorMessage } from "../../src/ui";
+import { useTheme } from "../../src/theme";
 export default function Account() {
+  const { preference, setPreference } = useTheme();
   const { user, error, controller } = useSession();
   const online = useOnline();
   const { language, setLanguage } = useLanguage();
@@ -40,6 +42,10 @@ export default function Account() {
           <Button title="Sign in" onPress={() => router.push("/auth")} />
         </Card>
       )}
+      <Card>
+        <Copy>Appearance</Copy>
+        {(["light", "dark", "system"] as const).map(mode => <Button key={mode} secondary={preference !== mode} title={mode === "system" ? "System" : mode === "dark" ? "Dark" : "Light"} selected={preference === mode} onPress={() => setPreference(mode)} />)}
+      </Card>
       <Card>
         <Button
           secondary
