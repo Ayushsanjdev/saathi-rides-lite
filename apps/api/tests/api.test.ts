@@ -33,7 +33,7 @@ beforeAll(async()=>{
 });
 afterAll(async()=>{await app.locals.sessionStore.close(); await mongoose.disconnect(); await repl?.stop();});
 beforeEach(async()=>{
-  for(const name of ['users','drivers','stops','routes','departures','bookings','auditevents','sessions']) await db().collection(name).deleteMany({});
+  for(const name of ['users','drivers','stops','routes','departures','bookings','auditevents','sessions','mobilesessions']) await db().collection(name).deleteMany({});
   await db().collection('users').createIndex({email:1},{unique:true});
   await db().collection('bookings').createIndex({passengerId:1,idempotencyKey:1},{unique:true});
   await db().collection('bookings').createIndex({reference:1},{unique:true});
@@ -43,6 +43,59 @@ beforeEach(async()=>{
   await db().collection('routes').insertOne({_id:ids.route,fromStopId:ids.from.toString(),toStopId:ids.to.toString(),farePaise:2500,active:true});
   const start=new Date(Date.now()+600000);
   await db().collection('departures').insertOne({_id:ids.departure,routeId:ids.route.toString(),pickup:'Village square',destination:'Bus stand',farePaise:2500,departureAt:start,endAt:new Date(start.getTime()+1800000),capacity:4,availableSeats:4,driverId:ids.driver.toString(),status:'scheduled',assignment:'accepted',createdAt:new Date()});
+});
+
+describe('native authentication',()=>{
+  const nativeLogin=async(role='rider')=>request(app).post('/api/mobile/auth/login').send({email:`${role}@saathi.test`,password:'TestPassword123!'});
+  it('issues hashed revocable credentials and books without browser cookies or CSRF',async()=>{
+    const result=await nativeLogin();expect(result.status).toBe(200);
+    const {token,expiresAt}=result.body;expect(token).toMatch(/^[a-f0-9]{64}$/);
+    expect(new Date(expiresAt).getTime()).toBeGreaterThan(Date.now()+6*86400000);
+    const stored=await db().collection('mobilesessions').findOne({userId:ids.rider.toString()});
+    expect(stored?.tokenHash).toBeTruthy();expect(stored?.tokenHash).not.toBe(token);
+    expect(JSON.stringify(stored)).not.toContain(token);
+    const auth=`Bearer ${token}`;
+    expect((await request(app).get('/api/me').set('Authorization',auth)).body.user.id).toBe(ids.rider.toString());
+    const payload={departureId:departureId(),seats:1,contactPhone:'9000000099',idempotencyKey:'native-book-0001'};
+    const booked=await request(app).post('/api/bookings').set('Authorization',auth).send(payload);expect(booked.status).toBe(201);
+    expect((await request(app).post('/api/bookings').set('Authorization',auth).send(payload)).body.booking.id).toBe(booked.body.booking.id);
+    expect((await request(app).get('/api/driver/trips').set('Authorization',auth)).status).toBe(403);
+    expect((await request(app).post('/api/mobile/auth/logout').set('Authorization',auth).send({})).status).toBe(200);
+    expect((await request(app).get('/api/me').set('Authorization',auth)).status).toBe(401);
+  });
+  it('rejects expired, malformed and inactive credentials without falling back to a browser session',async()=>{
+    const result=await nativeLogin();expect(result.status).toBe(200);const auth=`Bearer ${result.body.token}`;
+    await db().collection('mobilesessions').updateMany({},{$set:{expiresAt:new Date(Date.now()-1000)}});
+    expect((await request(app).get('/api/me').set('Authorization',auth)).status).toBe(401);
+    const browser=await login('rider');
+    expect((await browser.agent.get('/api/me').set('Authorization','Bearer invalid')).status).toBe(401);
+    expect((await browser.agent.post('/api/bookings').set('Authorization','Bearer invalid').send({})).status).toBe(401);
+    const fresh=await nativeLogin();await db().collection('users').updateOne({_id:ids.rider},{$set:{active:false}});
+    expect((await request(app).get('/api/me').set('Authorization',`Bearer ${fresh.body.token}`)).status).toBe(401);
+    expect((await nativeLogin()).status).toBe(401);
+  });
+  it('restricts registration to passengers and denies operator native login',async()=>{
+    expect((await nativeLogin('operator')).status).toBe(403);
+    expect((await request(app).post('/api/mobile/auth/register').send({name:'Native Rider',email:'native@saathi.test',password:'TestPassword123!',role:'driver'})).status).toBe(400);
+    const result=await request(app).post('/api/mobile/auth/register').send({name:'Native Rider',email:'native@saathi.test',password:'TestPassword123!'});
+    expect(result.status).toBe(201);expect(result.body.user.role).toBe('passenger');expect(result.body.token).toBeTruthy();
+    expect((await request(app).post('/api/auth/login').send({email:'rider@saathi.test',password:'TestPassword123!'})).status).toBe(403);
+    expect((await request(app).post('/api/mobile/auth/not-a-route').send({})).status).toBe(403);
+  });
+  it('enforces driver account status, passenger ownership and driver lifecycle using native credentials',async()=>{
+    const rider=await nativeLogin();const driver=await nativeLogin('driver');expect(driver.status).toBe(200);
+    const b=await request(app).post('/api/bookings').set('Authorization',`Bearer ${rider.body.token}`).send({departureId:departureId(),seats:1,contactPhone:'9000000099',idempotencyKey:'native-lifecycle-01'});
+    const other=await nativeLogin('other');
+    expect((await request(app).get(`/api/bookings/${b.body.booking.id}`).set('Authorization',`Bearer ${other.body.token}`)).status).toBe(404);
+    const auth=`Bearer ${driver.body.token}`;
+    expect((await request(app).post(`/api/driver/trips/${departureId()}/start`).set('Authorization',auth).send({})).status).toBe(200);
+    expect((await request(app).get(`/api/driver/trips/${departureId()}/manifest`).set('Authorization',auth)).body.bookings).toHaveLength(1);
+    expect((await request(app).post(`/api/driver/bookings/${b.body.booking.id}/collect`).set('Authorization',auth).send({})).status).toBe(200);
+    expect((await request(app).post(`/api/driver/trips/${departureId()}/complete`).set('Authorization',auth).send({})).status).toBe(200);
+    await db().collection('drivers').updateOne({userId:ids.driver.toString()},{$set:{active:false}});
+    expect((await request(app).get('/api/me').set('Authorization',auth)).status).toBe(403);
+    expect((await nativeLogin('driver')).status).toBe(403);
+  });
 });
 
 describe('sessions and permissions',()=>{

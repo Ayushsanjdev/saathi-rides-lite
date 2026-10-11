@@ -1,5 +1,7 @@
 # Verification and testing
 
+For the Expo addition verified on 9 October 2026, see [mobile verification](mobile/verification.md). That record supersedes the earlier test counts and workspace dependency-audit results below.
+
 Verified locally on 3 October 2026 with Node.js 24 on macOS. These results establish local functionality, not deployment to a public service or performance on a physical low-end Android device.
 
 ## Automated evidence

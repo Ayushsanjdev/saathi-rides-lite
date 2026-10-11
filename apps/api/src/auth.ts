@@ -6,12 +6,15 @@ import {AppError} from './errors';
 declare module 'express-session' { interface SessionData {userId:string;csrfToken:string;} }
 export function token(req:Request){if(!req.session.csrfToken)req.session.csrfToken=randomBytes(32).toString('hex');return req.session.csrfToken;}
 export function csrf(origin:string){return (req:Request,_res:Response,next:NextFunction)=>{
+  if(_res.locals.mobileSessionId)return next();
+  if(req.method==='POST'&&['/mobile/auth/login','/mobile/auth/register'].includes(req.path))return next();
   if(['GET','HEAD','OPTIONS'].includes(req.method))return next();
   const actual=req.get('X-CSRF-Token');const expected=req.session.csrfToken;
   if(req.get('Origin')!==origin||!actual||!expected||!/^[a-f0-9]{64}$/.test(actual)||actual.length!==expected.length||!timingSafeEqual(Buffer.from(actual),Buffer.from(expected)))return next(new AppError(403,'CSRF','Refresh this page and try again.'));
   next();
 };}
 export async function authenticate(req:Request,res:Response,next:NextFunction){
+  if(res.locals.mobileSessionId)return next();
   if(!req.session.userId)throw new AppError(401,'UNAUTHENTICATED','Sign in to continue.');
   const user=await User.findOne({_id:req.session.userId,active:true}).lean();if(!user)throw new AppError(401,'UNAUTHENTICATED','Your session has expired.');
   if(user.role==='driver'&&!await Driver.exists({userId:String(user._id),active:true}))throw new AppError(403,'FORBIDDEN','Your driver account is inactive. Contact the operator.');

@@ -7,7 +7,7 @@ async function proxy(request:NextRequest,{params}:{params:Promise<{path:string[]
   // The upstream origin is deployment configuration, never a client-supplied URL.
   const upstream=new URL(process.env.API_INTERNAL_URL||'http://127.0.0.1:4000');
   upstream.pathname=`/api/${path.map(encodeURIComponent).join('/')}`;upstream.search=request.nextUrl.search;
-  const headers=new Headers();for(const name of ['content-type','cookie','origin','x-csrf-token']){const value=request.headers.get(name);if(value)headers.set(name,value);}
+  const headers=new Headers();for(const name of ['content-type','cookie','origin','x-csrf-token','authorization']){const value=request.headers.get(name);if(value)headers.set(name,value);}
   // Only trust the protocol configured by the operator, not client-provided forwarded headers.
   headers.set('x-forwarded-proto',process.env.APP_ORIGIN?.startsWith('https://')?'https':'http');
   let body:Uint8Array|undefined;

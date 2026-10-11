@@ -11,6 +11,7 @@ import {registerSchema,loginSchema,bookingSchema,objectId,stopSchema,routeSchema
 import {User,Driver,Stop,Route,Departure,Booking,Audit} from './models';
 import {AppError,parse,missing,conflict} from './errors';
 import {token,csrf,authenticate,requireRole,actor,regenerate,saveSession} from './auth';
+import {mobileCredentials,mobileAuthRoutes} from './mobile-auth';
 import {createBooking,cancelBooking} from './booking';
 import {scheduleDeparture,assignDriver,driverAction,cancelDeparture,collectCash,markNoShow} from './operations';
 import {bookingDTO,departureDTO} from './serializers';
@@ -23,7 +24,8 @@ export function createApp(config:AppConfig){
   app.use(helmet());app.use(express.json({limit:'16kb'}));
   const cookieName=config.hostedDemo?'saathi.demo.sid':'saathi.sid';
   app.use(session({name:cookieName,secret:config.sessionSecret,resave:false,saveUninitialized:false,store:sessionStore,cookie:{httpOnly:true,secure:config.production??false,sameSite:'lax',maxAge:7*86400000}}));
-  app.use('/api',csrf(config.appOrigin));
+  app.use('/api',mobileCredentials,csrf(config.appOrigin));
+  mobileAuthRoutes(app);
   app.get('/api/health',(_req,res)=>res.json({status:'ok'}));
   app.get('/api/ready',(_req,res)=>res.status(mongoose.connection.readyState===1?200:503).json({status:mongoose.connection.readyState===1?'ready':'unavailable'}));
   app.get('/api/config',(_req,res)=>res.json({supportPhone:config.supportPhone||null,demoSignIn:config.demoSignIn===true,demo:config.hostedDemo?{password:'SaathiDemo2026!'}:!config.production&&process.env.DEMO_MODE==='true'?{password:process.env.DEMO_PASSWORD}:null}));

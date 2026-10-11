@@ -26,4 +26,7 @@ export const Route=mongoose.model<RouteRecord>('Route',routeSchema);
 export const Departure=mongoose.model<DepartureRecord>('Departure',departureSchema);
 export const Booking=mongoose.model<BookingRecord>('Booking',bookingSchema);
 export const Audit=mongoose.model<AuditRecord>('AuditEvent',auditSchema);
-export async function ensureIndexes(){await Promise.all([User,Driver,Stop,Route,Departure,Booking,Audit].map(m=>m.createIndexes()));}
+const mobileSessionSchema=new Schema({userId:{type:String,required:true},tokenHash:{type:String,required:true,unique:true},expiresAt:{type:Date,required:true}},opts);
+mobileSessionSchema.index({expiresAt:1},{expireAfterSeconds:0});
+export const MobileSession=mongoose.model('MobileSession',mobileSessionSchema);
+export async function ensureIndexes(){await Promise.all([User,Driver,Stop,Route,Departure,Booking,Audit,MobileSession].map(m=>m.createIndexes()));}

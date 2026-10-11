@@ -99,3 +99,19 @@ Login returns a new token. Use that token for booking mutations. Query routes an
 ```
 
 400 invalid input; 401 missing session/credentials; 403 role or CSRF rejection; 404 unavailable/other-owner resource; 409 domain conflict; 413 oversized request; 429 login throttle; 500 unexpected API error; 502 proxy cannot reach the API. Private data and stack traces are not returned in errors.
+
+## Native mobile authentication
+
+Mobile uses the same public `/api` proxy, with these additional endpoints:
+
+| Method | Path | Contract |
+| --- | --- | --- |
+| POST | `/mobile/auth/register` | Existing registration input; creates a passenger and returns `{user, token, expiresAt}` |
+| POST | `/mobile/auth/login` | Existing email/password input; passenger/driver session, same response |
+| POST | `/mobile/auth/logout` | Bearer credential; revokes that native session |
+
+`Authorization: Bearer TOKEN` authenticates the existing `/me`, passenger and driver endpoints. Tokens are opaque random values, hashed in MongoDB, expire after seven days and are checked for current user/driver eligibility on every request. Operator sign-in is refused with a web-app instruction. A driver becoming inactive returns 403 with code `ACCOUNT_INACTIVE`, so mobile clears authentication without treating ordinary role-based 403 responses as expired sessions.
+
+Valid native bearer credentials do not use cookies or CSRF tokens. Missing bearer credentials retain the browser cookie/CSRF path. Invalid Authorization headers return 401 and never fall back to cookies. Only the exact native POST login/register routes permit unauthenticated mutations without CSRF; both are rate-limited. Login responses are not cached. Existing browser auth endpoints retain their Origin and CSRF requirements.
+
+The Next proxy now forwards Authorization. Keep the upstream API private and use HTTPS for mobile production URLs. `NativeSessionDTO`, `PublicConfigDTO`, `BookingPageDTO`, `DriverOverviewDTO`, and `ManifestDTO` are exported from the shared contracts package. `mobilesessions` has a unique token-hash index and expiry TTL index; middleware checks expiry explicitly rather than relying on asynchronous TTL deletion.

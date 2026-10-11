@@ -106,3 +106,9 @@ MongoDB was selected for the user's backend-learning goal. PostgreSQL would offe
 ## Deliberate limits
 
 Operator summary panels contain bounded recent samples for bookings/audit/reference lists; aggregate counters query the full collections. Driver and operator actionable departure lists have separate filtered pagination and cannot be hidden behind a 100-record future/history sample. The current app does not implement dynamic dispatch, reservations without an assigned driver, emergency monitoring, automatic refunds or online payments.
+
+## Native client
+
+`apps/mobile` is an Expo Router app within the existing npm workspaces. It reaches the same Next.js `/api` proxy as browsers, using explicit bearer credentials; Express remains private in production. `packages/core` holds platform-independent translations, INR/IST formatting and request transport. `packages/contracts` remains the shared validation and DTO boundary. Web Radix/Tailwind components and native components are separate presentation layers.
+
+The mobile app stores native credentials in SecureStore and scopes all private TanStack Query keys and booking drafts to the authenticated user. Root navigation waits for session restoration, including cold-start detail links. Native requests capture the token used to send them, so a late 401 from a previous account cannot invalidate the current account. Public/native authentication and browser cookie/CSRF paths share domain services and permission checks.

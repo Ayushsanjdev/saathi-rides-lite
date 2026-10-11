@@ -1,7 +1,7 @@
 FROM node:24-bookworm-slim AS builder
 WORKDIR /app
 COPY . .
-RUN npm ci && npm run build && npm prune --omit=dev
+RUN npm ci --workspace @saathi/api --workspace @saathi/web --workspace @saathi/contracts --workspace @saathi/core --include-workspace-root && npm run build && npm prune --omit=dev --workspace @saathi/api --workspace @saathi/web --workspace @saathi/contracts --workspace @saathi/core --include-workspace-root
 
 FROM node:24-bookworm-slim AS api
 WORKDIR /app

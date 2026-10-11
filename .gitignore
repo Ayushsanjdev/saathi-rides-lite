@@ -9,3 +9,11 @@ test-results/
 playwright-report/
 *.tsbuildinfo
 work/
+
+# Expo generated state and device builds
+.expo/
+apps/mobile/android/
+apps/mobile/ios/
+apps/mobile/.env*
+!apps/mobile/.env.example
+coverage/

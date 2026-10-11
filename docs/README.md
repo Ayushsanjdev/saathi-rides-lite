@@ -2,6 +2,10 @@
 
 A mobile-first, full-stack scheduled e-rickshaw booking project. Passengers reserve shared seats from named pickup points; drivers manage trips; operators manage the local timetable. The demonstration does not dispatch real transport.
 
+## Native mobile app
+
+Android and iOS source lives in `apps/mobile`. See [mobile setup and build instructions](../apps/mobile/README.md). Run `npm run dev:mobile` for the API/web proxy and `npm run mobile` in a second terminal for Metro. Passenger and driver workflows are available natively; operator administration stays on the web.
+
 ## Start here
 
 Requires Node.js 24 and npm. From the project root:
@@ -63,6 +67,8 @@ Use separate browser profiles to keep different roles signed in simultaneously. 
 | `apps/web/components` | Passenger, driver, operator and shared UI |
 | `apps/web/components/ui` | Generated shadcn/ui component source |
 | `apps/web/lib` | API client, formatting, translations, class helpers |
+| `apps/mobile` | Expo Android/iOS passenger and driver app |
+| `packages/core` | Shared transport, translations, fare and IST formatting |
 | `apps/api/src/app.ts` | Express middleware and HTTP controllers |
 | `apps/api/src/booking.ts` | Transactional booking and cancellation rules |
 | `apps/api/src/operations.ts` | Scheduling, assignment, trip and collection rules |
@@ -98,6 +104,6 @@ Read [learning-guide](learning-guide.md) first to understand a request end to en
 
 ## Practical boundaries
 
-This is working scheduled-ride software and a portfolio project. Phone OTP, password recovery, electronic payment settlement, GPS tracking, push notifications, public hosted infrastructure and staffed support are not integrated. Email/password and direct cash payment make the demonstration self-contained. A native Android app could reuse the backend, but this deliverable is a responsive web app.
+This is working scheduled-ride software and a portfolio project with web and Expo Android/iOS clients. Phone OTP, password recovery, electronic payment settlement, GPS tracking, push notifications, public hosted infrastructure and staffed support are not integrated. Email/password and direct cash payment make the demonstration self-contained. Native runtime validation and distribution requirements are recorded in [mobile verification](mobile/verification.md).
 
 An actual transport pilot needs state-specific operating approvals, driver/vehicle checks, insurance, suitable roads, fair fares and staffed incident handling. Default contact numbers and vehicle registrations are fictitious. Do not use demo accounts or an unauthenticated local MongoDB for real passengers.

@@ -23,3 +23,9 @@ export type AuditDTO={id:string;actorId:string;action:string;entityId:string;cre
 export type OverviewDTO={departures:DepartureDTO[];bookings:BookingDTO[];drivers:DriverDTO[];routes:RouteDTO[];stops:StopDTO[];audit:AuditDTO[];stats:{completedTrips:number;confirmedSeats:number;collectedPaise:number;cancelledBookings:number}};
 
 export type DeparturePageDTO={departures:DepartureDTO[];page:number;total:number;hasMore:boolean};
+
+export type NativeSessionDTO={user:UserDTO;token:string;expiresAt:string};
+export type PublicConfigDTO={supportPhone:string|null;demoSignIn:boolean;demo:{password:string}|null};
+export type BookingPageDTO={bookings:BookingDTO[];page:number;total:number;hasMore:boolean};
+export type DriverOverviewDTO={trips:DepartureDTO[];collectedPaise:number;completedTrips:number};
+export type ManifestDTO={departure:DepartureDTO;bookings:BookingDTO[]};
