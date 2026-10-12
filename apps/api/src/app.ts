@@ -28,7 +28,7 @@ export function createApp(config:AppConfig){
   mobileAuthRoutes(app);
   app.get('/api/health',(_req,res)=>res.json({status:'ok'}));
   app.get('/api/ready',(_req,res)=>res.status(mongoose.connection.readyState===1?200:503).json({status:mongoose.connection.readyState===1?'ready':'unavailable'}));
-  app.get('/api/config',(_req,res)=>res.json({supportPhone:config.supportPhone||null,demoSignIn:config.demoSignIn===true,demo:config.hostedDemo?{password:'SaathiDemo2026!'}:!config.production&&process.env.DEMO_MODE==='true'?{password:process.env.DEMO_PASSWORD}:null}));
+  app.get('/api/config',(_req,res)=>res.json({supportPhone:config.supportPhone||null,demoSignIn:config.demoSignIn===true,demo:config.hostedDemo?{password:'SaathiDemo2026!'}:!config.production&&(process.env.DEMO_MODE==='true'||process.env.ALLOW_DEMO_SEED==='true')&&process.env.DEMO_PASSWORD?{password:process.env.DEMO_PASSWORD}:null}));
   app.get('/api/auth/csrf',async(req,res)=>{const csrfToken=token(req);await saveSession(req);res.json({csrfToken});});
   const authLimit=rateLimit({windowMs:15*60000,limit:100,standardHeaders:'draft-8',legacyHeaders:false,message:{error:{code:'RATE_LIMITED',message:'Too many attempts. Try again later.'}}});
   const demoLimit=rateLimit({windowMs:15*60000,limit:20,standardHeaders:'draft-8',legacyHeaders:false,message:{error:{code:'RATE_LIMITED',message:'Too many demo sign-ins. Try again later.'}}});

@@ -2,6 +2,8 @@ import path from "node:path";
 import { spawn } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { MongoMemoryReplSet } from "mongodb-memory-server";
+const webPort = process.env.SAATHI_E2E_PORT || "3100";
+const apiPort = process.env.SAATHI_E2E_API_PORT || "4100";
 // Never run browser test mutations against the database in the user's .env.
 process.env.MONGOMS_DOWNLOAD_DIR = path.resolve(".cache/mongodb");
 const database = await MongoMemoryReplSet.create({
@@ -30,10 +32,11 @@ try {
         ALLOW_DEMO_SEED: "true",
         DEMO_MODE: "true",
         DEMO_PASSWORD: "SaathiDemo2026!",
-        APP_ORIGIN: "http://127.0.0.1:3000",
-        API_INTERNAL_URL: "http://127.0.0.1:4000",
-        API_PORT: "4000",
-        PORT: "3000",
+        APP_ORIGIN: `http://127.0.0.1:${webPort}`,
+        API_INTERNAL_URL: `http://127.0.0.1:${apiPort}`,
+        API_PORT: apiPort,
+        PORT: webPort,
+        SAATHI_NEXT_DIST_DIR: '.next-e2e',
       },
     },
   );

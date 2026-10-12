@@ -1,4 +1,6 @@
 export const hindi: Record<string, string> = {
+  "Skip to content": "मुख्य भाग पर जाएँ",
+  "Finding rides…": "सवारियाँ खोज रहे हैं…",
   "Appearance": "रंग थीम",
   "Light": "हल्का",
   "Dark": "गहरा",

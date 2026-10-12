@@ -3,6 +3,7 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 import { AlertDialog as AlertDialogPrimitive } from "radix-ui"
+import { useDialogFocus } from './use-dialog-focus'
 
 import { Button } from "@/components/ui/button"
 
@@ -51,6 +52,7 @@ function AlertDialogContent({
 }: React.ComponentProps<typeof AlertDialogPrimitive.Content> & {
   size?: "default" | "sm"
 }) {
+  const focus = useDialogFocus(props)
   return (
     <AlertDialogPortal>
       <AlertDialogOverlay />
@@ -62,6 +64,7 @@ function AlertDialogContent({
           className
         )}
         {...props}
+        {...focus}
       />
     </AlertDialogPortal>
   )
