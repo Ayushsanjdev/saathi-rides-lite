@@ -5,13 +5,16 @@ node_modules/
 .next-verify/
 dist/
 .env
-.env.local
+.env.*
+!.env.example
 .data/
 .cache/
 test-results/
 playwright-report/
 *.tsbuildinfo
 work/
+*.log
+.DS_Store
 
 # Expo generated state and device builds
 .expo/

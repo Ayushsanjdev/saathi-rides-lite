@@ -38,7 +38,7 @@ Latest local Chrome desktop navigation samples: 16.4–43.7ms, median 22.65ms. S
 
 ## Preview artifacts
 
-- [Desktop booking](web-booking-desktop.png)
-- [Mobile booking](web-booking-mobile.png)
-- [Operator desktop](web-operator-desktop.png)
+- [Desktop booking](assets/web-booking-desktop.png)
+- [Mobile booking](assets/web-booking-mobile.png)
+- [Operator desktop](assets/web-operator-desktop.png)
 

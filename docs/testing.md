@@ -8,7 +8,7 @@ Verified: all workspace type checks, 33 API/shared tests, 17 mobile tests, four 
 
 The Docker API dependency layout was reproduced in a temporary directory with a frozen lockfile and its Argon2/Express/Mongoose/Zod imports verified. Docker itself is unavailable, so the Linux image has not been built or run. The API image uses an isolated production dependency layout to include only its runtime graph; local development remains hoisted.
 
-The npm commands and results below are historical. Current setup commands are in [the setup guide](README.md).
+The npm commands and results below are historical. Current setup commands are in [the setup guide](getting-started.md).
 
 For the Expo addition verified on 9 October 2026, see [mobile verification](mobile/verification.md). That record supersedes the earlier test counts and workspace dependency-audit results below.
 
@@ -31,7 +31,7 @@ Tests use an isolated temporary replica set, not the demonstration database. The
 
 Connected Chrome was used for actual passenger authentication, booking with a contact number, server-confirmed booking display, cancellation, operator departure creation, driver authentication and assignment acceptance. The mobile passenger and operator screens were checked at 390px; no horizontal overflow was observed. Session persistence was checked across a server restart.
 
-Playwright journeys are included in `tests/app.spec.ts`. The local sandbox blocked Chromium launch with a macOS MachPortRendezvous permission error. Therefore the automated browser suite is **not claimed as passing**. Run it outside this restriction using the commands in `README.md`. The full cash-collection/completion lifecycle is covered by API integration tests; the entire lifecycle has not been independently executed through every browser control.
+Playwright journeys are included in `tests/e2e/app.spec.ts`. The local sandbox blocked Chromium launch with a macOS MachPortRendezvous permission error. Therefore the automated browser suite is **not claimed as passing**. Run it outside this restriction using the commands in [the setup guide](getting-started.md). The full cash-collection/completion lifecycle is covered by API integration tests; the entire lifecycle has not been independently executed through every browser control.
 
 The operator datetime control should be exercised manually on the target browser: automation against native segmented date controls can leave the previous value unchanged. Confirm the displayed time before submitting.
 

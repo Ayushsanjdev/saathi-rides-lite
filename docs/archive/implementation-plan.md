@@ -8,7 +8,7 @@
 
 **Tech stack:** TypeScript, Next.js, Express, MongoDB/Mongoose, Tailwind, shadcn/ui, Vitest, Playwright.
 
-**Spec:** `docs/design.md`.
+**Spec:** `docs/archive/design.md`.
 
 ## Global constraints
 
@@ -62,7 +62,7 @@ expect(await Booking.countDocuments({departureId})).toBe(4);
 
 ## Task 3 — mobile-first working app
 
-Files: `apps/web/app/{layout,page,globals.css}`, `apps/web/components/{app,auth,rider,driver,operator,ui/*}`, `apps/web/lib/{api,i18n,utils}.ts`, `tests/app.spec.ts`.
+Files: `apps/web/app/{layout,page,globals.css}`, `apps/web/components/{app,auth,rider,driver,operator,ui/*}`, `apps/web/lib/{api,i18n,utils}.ts`, `tests/e2e/app.spec.ts`.
 
 Interfaces: shared contracts and API response types; `api<T>(path, options): Promise<T>` attaches session CSRF tokens; TanStack Query handles visible-screen polling and invalidation.
 

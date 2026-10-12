@@ -1,6 +1,6 @@
 # Saathi Rides — full-stack project design
 
-Status: approved by the user's instruction to build; implemented. See `testing.md` for verified behavior and remaining limits.
+Status: approved by the user's instruction to build; implemented. See [testing](../testing.md) for verified behavior and remaining limits.
 
 ## Purpose and scope
 
